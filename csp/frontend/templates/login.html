@@ -1,0 +1,38 @@
+<!--
+    This Source Code Form is subject to the terms of the Mozilla Public
+    License, v. 2.0. If a copy of the MPL was not distributed with this
+    file, You can obtain one at http://mozilla.org/MPL/2.0/.
+-->
+
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <title>CSP Thing</title>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <!--<link rel="stylesheet" href="static/css/normalize.css">-->
+    <link rel="stylesheet" href="static/css/bootstrap.css">
+    <!--<link rel="stylesheet" href="static/css/font-awesome.css">-->
+    <link rel="stylesheet" href="static/css/csp-login.css">
+    <script src="https://login.persona.org/include.js"></script>
+    <script src="/static/js/jquery-1.11.1.js"></script>
+    <script src="/static/js/csp-login.js"></script>
+  </head>
+
+  <body>
+
+    <div class="container">
+      <div class="login-container">
+        <div id="output"></div>
+        <!--<div class="avatar"></div>-->
+        <div class="form-box">
+          <p><b>CSP Thing Needs A Name</b> is a security dashboard that collects and reports <a href="https://developer.mozilla.org/en-US/docs/Web/Security/CSP/Using_CSP_violation_reports" target="_blank">CSP Violation Reports</a> from our web properties.</p>
+          <button id="signin" data-email="{{email}}" class="btn btn-info btn-block login" type="submit">Login with Persona</button>
+          <p class="note"><i>Please use your Mozilla, Mozilla Foundation or registered Mozillians email address to access the site.</i></p>
+        </div>
+      </div>
+    </div>
+  </body>
+
+</html>

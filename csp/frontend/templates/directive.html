@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>CSP Reports for {{directive.directive}}</h2>
+
+<div id="chart" data-chart-data-url="/data/timeline/site/{{hostname}}/directive/{{directive.id}}"></div> 
+
+<h3>Documents</h3>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Page</th>
+      <th>Count</th>
+    </tr>
+  </thead>
+  {% for d in top_documents %}
+    <tr>
+      <td><a href="/site/{{hostname}}/directive/{{directive.id}}/document/{{d[0]}}">{{d[1]}}</a></td>
+      <td>{{d[2]}}</td>
+    </tr>
+  {% else %}
+    <td colspan="2">No data. Sad.</td>
+  {% endfor %}
+</table>
+
+<h3>Top User Agents</h3>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>User Agent</th>
+      <th>Count</th>
+    </tr>
+  </thead>
+  {% for v in top_useragents %}
+    <tr>
+      <td>{{v[1]}}</td>
+      <td>{{v[2]}}</td>
+    </tr>
+  {% else %}
+    <td colspan="2">No data. Sad.</td>
+  {% endfor %}
+</table>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/csp-directive.js"></script></a>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>CSP Reports for {{hostname}}</h2>
+
+<p>Fancy chart here</p>
+
+<h3>Top Violations</h3>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Directive</th>
+      <th>Count</th>
+    </tr>
+  </thead>
+  {% for v in top_violations %}
+    <tr>
+      <td>{{v[0]}}</td>
+      <td>{{v[1]}}</td>
+    </tr>
+  {% else %}
+    <td colspan="2">No data. Sad.</td>
+  {% endfor %}
+</table>
+
+<h3>Top Pages</h3>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Directive</th>
+      <th>Count</th>
+    </tr>
+  </thead>
+  {% for v in top_pages %}
+    <tr>
+      <td><a href="/site/{{hostname}}/document/{{v[0]}}">{{v[1]}}</a></td>
+      <td>{{v[2]}}</td>
+    </tr>
+  {% else %}
+    <td colspan="2">No data. Sad.</td>
+  {% endfor %}
+
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>CSP Reports for {{document.uri}}</h2>
+
+<h3>Violations</h3>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Violated Directive</th>
+      <th>Count</th>
+    </tr>
+  </thead>
+  {% for v in top_violations %}
+    <tr>
+      <td>{{v[0]}}</td>
+      <td>{{v[1]}}</td>
+    </tr>
+  {% else %}
+    <td colspan="2">No data. Sad.</td>
+  {% endfor %}
+</table>
+
+<h3>Top Blocked Content</h3>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Page</th>
+      <th>Count</th>
+    </tr>
+  </thead>
+  {% for v in top_blockers %}
+    <tr>
+      <td>{{v[0][:80]}}</td>
+      <td>{{v[1]}}</td>
+    </tr>
+  {% else %}
+    <td colspan="2">No data. Sad.</td>
+  {% endfor %}
+</table>
+
+{% endblock %}

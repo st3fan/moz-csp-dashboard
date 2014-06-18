@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h3></h3>
+
+<div id="chart" data-chart-data-url="/data/timeline/site/{{hostname}}/directive/{{directive.id}}/document/{{document.id}}"></div>
+
+<h3>Reports</h3>
+
+{% for r in reports %}
+  <pre>{{r}}</pre>
+{% else %}
+  <p>No data. Sad.</p>
+{% endfor %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/csp-site-directive-document.js"></script></a>
+{% endblock %}
+
