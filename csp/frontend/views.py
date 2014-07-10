@@ -30,6 +30,12 @@ def login_required(f):
 
 #
 
+def find_all_sites():
+    with psycopg2.connect("dbname=csp user=csp password=csp") as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(ALL_SITES_QUERY)
+            return [{"id":row[0], "hostname":row[1]} for row in cursor]
+
 def find_default_site(session):
     site = session.get("site")
     if site is None:
@@ -162,6 +168,7 @@ def persona_login():
 def site(hostname=None):
     return render_template("site.html",
                            hostname=hostname,
+                           sites=find_all_sites(),
                            top_violations=find_top_violations(hostname),
                            top_pages=find_top_pages(hostname),
                            top_blockers=find_top_blockers_for_site(hostname),
@@ -172,6 +179,7 @@ def site(hostname=None):
 def site_directive(hostname, directive_id):
     return render_template("directive.html",
                            hostname=hostname,
+                           sites=find_all_sites(),
                            directive=find_directive(directive_id),
                            top_documents=find_top_documents_for_directive(hostname, directive_id),
                            top_useragents=find_useragents_for_directive(hostname, directive_id))
@@ -180,6 +188,7 @@ def site_directive(hostname, directive_id):
 @login_required
 def site_directive_document(hostname, directive_id, document_id):
     return render_template("site-directive-document.html",
+                           sites=find_all_sites(),
                            directive=find_directive(directive_id),
                            document=find_document(document_id),
                            reports=generate_raw_reports_for_document(hostname, directive_id, document_id),
@@ -190,6 +199,7 @@ def site_directive_document(hostname, directive_id, document_id):
 @login_required
 def site_document(hostname, document_id):
     return render_template("document.html",
+                           sites=find_all_sites(),
                            hostname=hostname,
                            document=find_document(document_id),
                            top_violations=find_top_violations_for_document(document_id),

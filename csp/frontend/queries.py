@@ -6,7 +6,9 @@ FIND_FIRST_SITE_QUERY = "select hostname from sites order by hostname limit 1"
 
 DIRECTIVE_QUERY = "select id,directive from directives where id = %s"
 
-
+ALL_SITES_QUERY = """
+select id,hostname from sites order by hostname
+"""
 
 TIMELINE_VIOLATIONS_FOR_HOST_QUERY = """
 with filled_dates as (
@@ -53,11 +55,11 @@ order by count(d.directive) desc
 """
 
 TOP_VIOLATIONS_FOR_DOCUMENT_QUERY = """
-select distinct r.violateddirective, count(r.violateddirective)
-from reports r, documents d
-where r.documentid = d.id and d.id = %s
-group by r.violateddirective
-order by count(r.violateddirective) desc
+select distinct r.violateddirectiveid, dir.directive, count(*)
+from reports r, documents d, directives dir
+where r.documentid = d.id and d.id = %s and r.violateddirectiveid = dir.id
+group by r.violateddirectiveid, dir.directive
+order by count(*) desc
 """
 
 TOP_BLOCKERS_FOR_SITE_QUERY = """
