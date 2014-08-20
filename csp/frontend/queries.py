@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/
 
-FIND_FIRST_SITE_QUERY = "select hostname from sites order by hostname limit 1"
+FIND_FIRST_SITE_QUERY = "select hostname from site order by hostname limit 1"
 
-DIRECTIVE_QUERY = "select id,directive from directives where id = %s"
+DIRECTIVE_QUERY = "select id,value from violateddirective where id = %s"
 
 ALL_SITES_QUERY = """
-select id,hostname from sites order by hostname
+select id,hostname from site order by hostname
 """
 
 TIMELINE_VIOLATIONS_FOR_HOST_QUERY = """
@@ -18,7 +18,7 @@ with filled_dates as (
 ),
 report_counts as (
   select date_trunc('day', r.created) as day, count(*) as reports
-    from reports r, sites s where r.siteid = s.id and s.hostname = %s
+    from report r, site s where r.siteid = s.id and s.hostname = %s
   group by date_trunc('day', r.created)
 )
 select filled_dates.day, coalesce(report_counts.reports, filled_dates.blank_count) as reports
@@ -35,7 +35,7 @@ with filled_dates as (
 ),
 report_counts as (
   select date_trunc('day', r.created) as day, count(*) as reports
-    from reports r, sites s, directives d where r.siteid = s.id and s.hostname = %s and r.violateddirectiveid = d.id and d.id = %s
+    from report r, site s, directives d where r.siteid = s.id and s.hostname = %s and r.violateddirectiveid = d.id and d.id = %s
   group by date_trunc('day', r.created)
 )
 select filled_dates.day, coalesce(report_counts.reports, filled_dates.blank_count) as reports
@@ -47,92 +47,127 @@ select filled_dates.day, coalesce(report_counts.reports, filled_dates.blank_coun
 
 
 TOP_VIOLATIONS_QUERY = """
-select distinct d.directive, d.id, count(d.directive)
-from reports r, sites s, directives d
-where r.siteid = s.id and s.hostname = %s and r.violateddirectiveid = d.id
-group by d.directive, d.id
-order by count(d.directive) desc
+select distinct vd.value, vd.id, count(vd.value)
+from report r, site s, ViolatedDirective vd
+where r.siteid = s.id and s.hostname = %s and r.violateddirectiveid = vd.id
+group by vd.value, vd.id
+order by count(vd.value) desc
 """
 
 TOP_VIOLATIONS_FOR_DOCUMENT_QUERY = """
-select distinct r.violateddirectiveid, dir.directive, count(*)
-from reports r, documents d, directives dir
-where r.documentid = d.id and d.id = %s and r.violateddirectiveid = dir.id
-group by r.violateddirectiveid, dir.directive
+select distinct r.violateddirectiveid, vd.value, count(*)
+from report r, documenturi du, violateddirective vd
+where r.documenturiid = du.id and du.id = %s and r.violateddirectiveid = vd.id
+group by r.violateddirectiveid, vd.value
 order by count(*) desc
 """
 
 TOP_BLOCKERS_FOR_SITE_QUERY = """
-select distinct b.uri, count(b.uri)
-from reports r, blockers b, sites s
-where r.siteid = s.id and s.hostname = %s and r.blockerid = b.id
-group by b.uri
-order by count(b.uri) desc
+select distinct bu.value, count(bu.value)
+from report r, blockeduri bu, site s
+where r.siteid = s.id and s.hostname = %s and r.blockeduriid = bu.id
+group by bu.value
+order by count(bu.value) desc
 """
 
 TOP_BLOCKERS_FOR_DOCUMENT_QUERY = """
-select distinct b.uri, count(b.uri)
-from reports r, blockers b, documents d
-where r.documentid = d.id and d.id = %s and r.blockerid = b.id
-group by b.uri
-order by count(b.uri) desc
+select distinct bu.value, count(bu.value)
+from report r, blockeduri bu, documenturi du
+where r.documenturiid = du.id and du.id = %s and r.blockeduriid = bu.id
+group by bu.value
+order by count(bu.value) desc
 """
 
 TOP_PAGES_QUERY = """
-select distinct d.id, d.uri, count(r.documentid)
-from reports r, documents d, sites s
-where r.siteid = s.id and s.hostname = %s and r.documentid = d.id
-group by d.id, d.uri order by count(r.documentid) desc
+select distinct du.id, du.value, count(r.documenturiid)
+from report r, documenturi du, site s
+where r.siteid = s.id and s.hostname = %s and r.documenturiid = du.id
+group by du.id, du.value order by count(r.documenturiid) desc
 """
 
 TOP_DOCUMENTS_FOR_DIRECTIVE_QUERY = """
-select distinct d.id, d.uri, count(r.documentid)
-from reports r, documents d, sites s
-where r.siteid = s.id and s.hostname = %s and r.documentid = d.id and r.violateddirectiveid = %s
-group by d.id, d.uri order by count(r.documentid) desc
+select distinct du.id, du.value, count(r.documenturiid)
+from report r, documenturi du, site s
+where r.siteid = s.id and s.hostname = %s and r.documenturiid = du.id and r.violateddirectiveid = %s
+group by du.id, du.value order by count(r.documenturiid) desc
 """
 
 USERAGENTS_FOR_SITE_QUERY = """
-select distinct ua.id, ua.useragent, count(r.clientuseragent)
-from reports r, useragents ua, sites s
-where r.siteid = s.id and s.hostname = %s and r.clientuseragent = ua.id
-group by ua.id, ua.useragent
-order by count(r.clientuseragent) desc
+select distinct ua.id, ua.value, count(r.useragentid)
+from report r, useragent ua, site s
+where r.siteid = s.id and s.hostname = %s and r.useragentid = ua.id
+group by ua.id, ua.value
+order by count(r.useragentid) desc
 """
 
 USERAGENTS_FOR_DIRECTIVE_QUERY = """
-select distinct ua.id, ua.useragent, count(r.clientuseragent)
-from reports r, useragents ua, sites s
-where r.siteid = s.id and s.hostname = %s and r.clientuseragent = ua.id and r.violateddirectiveid = %s
-group by ua.id, ua.useragent
-order by count(r.clientuseragent) desc
+select distinct ua.id, ua.value, count(r.useragentid)
+from report r, useragent ua, site s
+where r.siteid = s.id and s.hostname = %s and r.useragentid = ua.id and r.violateddirectiveid = %s
+group by ua.id, ua.value
+order by count(r.useragentid) desc
 """
 
-FULL_REPORTS_FOR_SITE_DIRECTIVE_DOCUMENT_QUERY = """
+BAD_FULL_REPORTS_FOR_SITE_DIRECTIVE_DOCUMENT_QUERY = """
 select distinct
-  doc.uri as document_uri,
-  blo.uri as blocked_uri,
-  dir.directive as violated_directive,
-  pol.policy as original_policy,
-  r.scriptsource as script_source,
-  r.scriptsample as script_sample
+  du.value as document_uri,
+  bu.value as blocked_uri,
+  vd.value as violated_directive,
+  op.value as original_policy,
+  sso.value as script_source,
+  ssa.value as script_sample
 from
-  documents doc,
-  blockers blo,
-  directives dir,
-  sites s,
-  policies pol,
-  reports r
+  documenturi du,
+  blockeduri bu,
+  violateddirective vd,
+  site s,
+  originalpolicy op,
+  scriptsource sso,
+  scriptsample ssa,
+  report r
 where
   r.siteid = s.id and s.hostname = %s
     and
-  r.violateddirectiveid = dir.id and dir.id = %s
+  r.violateddirectiveid = vd.id and vd.id = %s
     and
-  r.documentid = doc.id and doc.id = %s
+  r.documenturiid = du.id and du.id = %s
     and
-  r.blockerid = blo.id
+  r.blockeduriid = bu.id
     and
-  r.originalpolicyid = pol.id
+  r.originalpolicyid = op.id
+    and
+  r.scriptsourceid = sso.id
+    and
+  r.scriptsampleid = ssa.id
 group by
-  doc.uri, blo.uri, dir.directive, pol.policy, r.scriptsource, r.scriptsample
+  du.value, bu.value, vd.value, op.value, sso.value, ssa.value
+"""
+
+
+
+FULL_REPORTS_FOR_SITE_DIRECTIVE_DOCUMENT_QUERY = """
+select distinct
+  du.value as document_uri,
+  bu.value as blocked_uri,
+  vd.value as violated_directive,
+  op.value as original_policy
+from
+  documenturi du,
+  blockeduri bu,
+  violateddirective vd,
+  site s,
+  originalpolicy op,
+  report r
+where
+  r.siteid = s.id and s.hostname = %s
+    and
+  r.violateddirectiveid = vd.id and vd.id = %s
+    and
+  r.documenturiid = du.id and du.id = %s
+    and
+  r.blockeduriid = bu.id
+    and
+  r.originalpolicyid = op.id
+group by
+  du.value, bu.value, vd.value, op.value
 """

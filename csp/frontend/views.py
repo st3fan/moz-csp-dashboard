@@ -67,16 +67,16 @@ def find_top_documents_for_directive(hostname, directive_id):
 def find_document(document_id):
     with psycopg2.connect("dbname=csp user=csp password=csp") as connection:
         with connection.cursor() as cursor:
-            cursor.execute("select id, uri from documents where id=%s", [document_id])
+            cursor.execute("select id, value from documenturi where id=%s", [document_id])
             row = cursor.fetchone()
             return {"id":row[0], "uri":row[1]}
 
 def find_directive(directive_id):
     with psycopg2.connect("dbname=csp user=csp password=csp") as connection:
         with connection.cursor() as cursor:
-            cursor.execute("select id, created, directive from directives where id=%s", [directive_id])
+            cursor.execute("select id, value from violateddirective where id=%s", [directive_id])
             row = cursor.fetchone()
-            return {"id":row[0], "created": row[1], "directive":row[2]}
+            return {"id":row[0], "created": 0, "directive":row[1]}
 
 def find_top_violations_for_document(document_id):
     with psycopg2.connect("dbname=csp user=csp password=csp") as connection:
